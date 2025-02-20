@@ -48,7 +48,6 @@ sudo nixos-rebuild switch --flake /home/YOUR_USERNAME/hypnix/#hypnix
 ## 🚧 Currently broken
 - wlogout
 - fusuma
-- Some misaligned icons in hyprpanel.
 
 ---
 
