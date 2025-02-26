@@ -1,0 +1,262 @@
+// ██████╗  ██████╗ ███████╗██╗
+// ██╔══██╗██╔═══██╗██╔════╝██║
+// ██████╔╝██║   ██║█████╗  ██║
+// ██╔══██╗██║   ██║██╔══╝  ██║
+// ██║  ██║╚██████╔╝██║     ██║
+// ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝
+// config by furcom (https://github.com/furcom)
+
+// More settings: https://github.com/davatorium/rofi/blob/next/doc/rofi-theme.5.markdown
+
+@import "./colors.rasi"
+
+* {
+  font: "0xProto Nerd Font Mono 18";
+
+  r1: 1em;
+  r2: 2em;
+  r100: 100%;
+
+  b015: 0.15em;
+  b0125: 0.125em;
+
+  s01: 0.1em;
+  s02: 0.2em;
+  s04: 0.4em;
+  s08: 0.8em;
+  s16: 1.6em;
+  s32: 3.2em;
+  s64: 6.4em;
+  s128: 12.8em;
+  s256: 25.6em;
+}
+
+configuration {
+
+  // General setting
+  case-sensitive: false;
+  cycle: true;
+  filter: "";
+  icon-theme: "Papirus";
+  modi: "";
+  normalize-match: true;
+  scroll-method: 0;
+  show-icons: true;
+  steal-focus: true;
+  matching: "normal";
+  tokenize: true;
+
+  // SSH settings
+  parse-hosts: true;
+  parse-known-hosts: true;
+  ssh-command: "{terminal} -e {ssh-client} {host} [-p {port}]";
+  ssh-client: "ssh";
+
+  // Drun settings
+  drun { parse-user:   true; parse-system: true; }
+  drun-categories: "";
+  drun-display-format: "{icon} {name}";
+  drun-match-fields: "name,generic,exec,categories,keywords";
+  drun-reload-desktop-cache: false;
+  drun-show-actions: false;
+  drun-url-launcher: "xdg-open";
+  drun-use-desktop-cache: false;
+
+  // Run settings
+  run-command: "{cmd}";
+  run-list-command: "";
+  run-shell-command: "{terminal} -e {cmd}";
+
+  // Fallback Icon
+  run,drun {
+    fallback-icon: "x";
+  }
+
+  // Window switcher settings
+  //window-command: "wmctrl -i -R {window}";
+  window-format: "{w} {c} {t}";
+  window-match-fields: "app-id";
+  window-thumbnail: false;
+
+  // Combi settings
+  //combi-display-format: "{mode} {text}";
+  //combi-hide-mode-prefix: false;
+  //combi-modi: "window,run";
+
+  // History and Sorting
+  disable-history: false;
+  max-history-size: 25;
+  sorting-method: "normal";
+
+  // Display setting
+  display-combi: "󰕘 Combi";
+  display-drun: " Apps";
+  display-filebrowser: " Files";
+  display-keys: " Keys";
+  display-run: " Run";
+  display-ssh: " SSH";
+  display-window: " Windows";
+  display-windowcd: " Windows CD";
+
+  // Misc setting
+  click-to-exit: true;
+  // ignored-prefixes: "";
+  // pid: "/run/user/1000/rofi.pid";
+  sort: false;
+  terminal: "rofi-sensible-terminal";
+  threads: 0;
+
+  // File browser settings
+  filebrowser {
+    // directory: "/home";
+    directories-first: true;
+    sorting-method: "name";
+  }
+
+  //Other settings
+  timeout { action: "kb-cancel"; delay: 0; }
+}
+
+window {
+  anchor: center;
+  background-color: @background;
+  border: @b015;
+  border-color: @primary;
+  border-radius: @r2;
+  location: center;
+  padding: @s16;
+  height: 45%;
+  width: 35%;
+}
+
+mainbox {
+  children: ["inputbar","listview"];
+}
+
+listview {
+  border: 0em;
+  cycle: true;
+  columns: 2;
+  dynamic: true;
+  expand: true;
+  layout: vertical;
+  scrollbar: true;
+  spacing: @s02;
+  reverse: false;
+  fixed-columns: false;
+  require-input: false;
+}
+
+scrollbar {
+  border-radius: @r100;
+  handle-color: @primary;
+  handle-width: 0.3em;
+  width: @s08;
+  height: @s08;
+}
+
+sidebar {
+  border-radius: @r1;
+  border-color: none;
+}
+
+num-filtered-rows {
+  expand: false;
+  text-color: @foreground;
+}
+
+num-rows {
+  expand: false;
+  text-color: @foreground;
+}
+
+textbox-num-sep {
+  expand: false;
+  str: "/";
+  text-color: @foreground;
+}
+
+inputbar {
+  children: ["entry","mode-switcher"];
+  margin: 0 0 1.6em 0;
+  text-color: @foreground;
+  border: @b0125;
+  border-color: @primary;
+  border-radius: @r1;
+  padding: @s02;
+}
+
+entry {
+  expand: true;
+  background-color: @background-dark;
+  cursor: text;
+  padding: 0.3em 0.2em 0.2em 0.2em;
+  margin: 0 0 0 0.4em;
+  placeholder: " Search";
+  placeholder-color: @primary-dark;
+  text-color: @primary;
+  vertical-align: center;
+}
+
+prompt {
+  expand: false;
+  padding: 0.2em 0.6em;
+  str: "";
+  text-color: @background;
+  background-color: @primary;
+  border-radius: @r1;
+  vertical-align: center;
+}
+
+textbox-prompt-colon {
+  expand: false;
+  padding: 0.2em 0.6em;
+  str: "";
+  text-color: @background;
+  background-color: @primary;
+  margin: 0 -0.4em 0 0;
+  border-radius: @r1;
+  vertical-align: center;
+}
+
+mode-switcher{
+  enabled: true;
+  text-color: @background;
+  background-color: @primary;
+  border-radius: @r1;
+  vertical-align: center;
+}
+
+button {
+  background-color: @background;
+  border: @b015;
+  border-color: @primary;
+  border-radius: @r1;
+  cursor: pointer;
+  padding: @s02;
+  text-color: @primary-dark;
+  width: 4.5em;
+}
+
+button selected {
+  background-color: @primary;
+  text-color: @background;
+}
+
+element {
+  border-radius: @r1;
+  cursor: pointer;
+  padding: @s04;
+}
+
+element normal.normal { background-color: @background; text-color: @foreground; }
+element normal.urgent { background-color: #ff0000; text-color: @foreground; }
+element normal.active { background-color: @background; text-color: @foreground; }
+element selected.normal { background-color: @primary; text-color: @foreground; }
+element selected.urgent { background-color: #770000; text-color: @foreground; }
+element selected.active { background-color: @primary; text-color: @foreground; }
+element alternate.normal { background-color: @background; text-color: @foreground; }
+element alternate.urgent { background-color: #ff0000; text-color: @foreground; }
+element alternate.active { background-color: @background; text-color: @foreground; }
+element-text { background-color: transparent; cursor: inherit; highlight: inherit; text-color: inherit; }
+element-icon { background-color: transparent; size: 1.0000em; cursor: inherit; text-color: inherit; }
