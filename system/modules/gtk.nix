@@ -1,0 +1,5 @@
+{ ... }:
+
+{
+  gtk.iconCache.enable = true;
+}
