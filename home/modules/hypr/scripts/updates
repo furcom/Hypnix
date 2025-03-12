@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+# ██████╗  █████╗  ██████╗██╗  ██╗ █████╗  ██████╗ ███████╗███████╗
+# ██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██╔══██╗██╔════╝ ██╔════╝██╔════╝
+# ██████╔╝███████║██║     █████╔╝ ███████║██║  ███╗█████╗  ███████╗
+# ██╔═══╝ ██╔══██║██║     ██╔═██╗ ██╔══██║██║   ██║██╔══╝  ╚════██║
+# ██║     ██║  ██║╚██████╗██║  ██╗██║  ██║╚██████╔╝███████╗███████║
+# ╚═╝     ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝
+# script by furcom (https://github.com/furcom)
+
+FLAKE_DIR="$HOME/hypnix"
+TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+BACKUP_FILE="$HOME/flake.lock_BACKUP_$TIMESTAMP"
+
+displayLogo() {
+  echo -e "\n\e[34m██╗  ██╗██╗   ██╗██████╗ ███╗   ██╗██╗██╗  ██╗\e[0m"
+  echo -e "\e[34m██║  ██║╚██╗ ██╔╝██╔══██╗████╗  ██║██║╚██╗██╔╝\e[0m"
+  echo -e "\e[34m███████║ ╚████╔╝ ██████╔╝██╔██╗ ██║██║ ╚███╔╝\e[0m"
+  echo -e "\e[34m██╔══██║  ╚██╔╝  ██╔═══╝ ██║╚██╗██║██║ ██╔██╗\e[0m"
+  echo -e "\e[34m██║  ██║   ██║   ██║     ██║ ╚████║██║██╔╝ ██╗\e[0m"
+  echo -e "\e[34m╚═╝  ╚═╝   ╚═╝   ╚═╝     ╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝\e[0m"
+  echo -e "\e[34m██╗   ██╗██████╗ ██████╗  █████╗ ████████╗███████╗███████╗\e[0m"
+  echo -e "\e[34m██║   ██║██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔════╝██╔════╝\e[0m"
+  echo -e "\e[34m██║   ██║██████╔╝██║  ██║███████║   ██║   █████╗  ███████╗\e[0m"
+  echo -e "\e[34m██║   ██║██╔═══╝ ██║  ██║██╔══██║   ██║   ██╔══╝  ╚════██║\e[0m"
+  echo -e "\e[34m╚██████╔╝██║     ██████╔╝██║  ██║   ██║   ███████╗███████║\e[0m"
+  echo -e "\e[34m ╚═════╝ ╚═╝     ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝╚══════╝\n\e[0m"
+}
+
+checkUpdates() {
+  # Check if the Flake exists
+  if [ ! -f "$FLAKE_DIR/flake.nix" ]; then
+    echo "0"
+    exit 1
+  fi
+
+  # Change to the Flake directory
+  cd "$FLAKE_DIR" || exit 1
+
+  # Create a temporary copy of the current flake.lock
+  cp flake.lock flake.lock.bak
+
+  # Perform a real update but discard changes
+  nix flake update > /dev/null 2>&1
+
+  # Count only the changed "rev" lines in flake.lock
+  UPDATE_COUNT=$(diff -u flake.lock.bak flake.lock | grep -E '^\+.*"rev":' | wc -l)
+
+  # Restore the original flake.lock
+  mv flake.lock.bak flake.lock
+
+  # Print the update count (this will be used in update_packages)
+  echo "$UPDATE_COUNT"
+}
+
+update_packages() {
+  # Ensure the Flake directory exists
+  if [ ! -f "$FLAKE_DIR/flake.nix" ]; then
+    echo -e "\n\e[31mError: No Flake configuration found in $FLAKE_DIR\e[0m"
+    exit 1
+  fi
+
+  cd "$FLAKE_DIR"
+
+  # Check for available updates
+  UPDATE_COUNT=$(checkUpdates)
+
+  # If no updates are available, inform the user and exit
+  if [ "$UPDATE_COUNT" -eq 0 ]; then
+    echo -e "\n\e[32mNo updates available!\n\e[0m"
+    read -rp "Press any key to exit..." exit
+    exit 0
+  fi
+
+  while true; do
+    displayLogo
+    read -rp "Do you want to update your packages? [y/N]: " input
+    case "$input" in
+      ""|NO|No|no|N|n) break ;;
+      YES|Yes|yes|Y|y)
+        updatePkgs "$UPDATE_COUNT"
+        break ;;
+      *) echo -e "\n\e[31mWrong input!\e[0m" ;;
+    esac
+  done
+}
+
+updatePkgs() {
+  local UPDATE_COUNT=$1
+  echo -e "\n\e[33m$UPDATE_COUNT updates available. Proceeding...\e[0m"
+
+  cd "$FLAKE_DIR"
+
+  # Backup the current flake.lock
+  cp "$FLAKE_DIR/flake.lock" "$BACKUP_FILE"
+  echo -e "\n\e[32mBackup created: $BACKUP_FILE\e[0m"
+
+  # Run the flake update with sudo
+  echo -e "\n\e[34mUpdating Flake...\e[0m"
+  nix flake update
+
+  # Rebuild the system
+  echo -e "\n\e[34mRebuilding system...\e[0m"
+  sudo nixos-rebuild switch --flake "$FLAKE_DIR/#hypnix"
+
+  echo -e "\n\e[32mUpdate and rebuild complete.\e[0m"
+  read -rp "Press any key to exit..." exit
+}
+
+case "$1" in
+  -cx)
+    clear
+    displayLogo
+    echo -e "\nAvailable updates:"
+    checkUpdates
+    echo
+    read -p "Press any key to exit..."
+  ;;
+  -c)
+    clear
+    checkUpdates
+  ;;
+  -u)
+    clear
+    displayLogo
+    update_packages
+  ;;
+  *) echo "0" ;;
+esac
