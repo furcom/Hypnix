@@ -1,0 +1,18 @@
+backend = "wal"
+color_space = "lch"
+palette = "dark"
+threshold = 20
+saturation = 25
+alpha = 100
+check_contrast = true
+
+[templates]
+cava = { template = 'cava', target = '~/.config/cava/config', new_engine = true }
+hyprland = { template = 'hyprland', target = '~/.config/hypr/hypr_colors.conf', new_engine = true }
+hyprlock = { template = 'hyprlock', target = '~/.config/hypr/hyprlock.conf', new_engine = true }
+hyprpanel = { template = 'hyprpanel', target = '~/.config/hyprpanel/config.json', new_engine = true }
+kitty = { template = 'kitty', target = '~/.config/kitty/style.conf', new_engine = true }
+oh-my-posh = { template = 'oh-my-posh', target = '~/.config/oh-my-posh/config.yaml', new_engine = true }
+rofi = { template = 'rofi', target = '~/.config/rofi/config.rasi', new_engine = true }
+waypaper = { template = 'waypaper', target = '~/.config/waypaper/config.ini', new_engine = true }
+wlogout = { template = 'wlogout', target = '~/.config/wlogout/style.css', new_engine = true }

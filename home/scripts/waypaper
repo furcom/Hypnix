@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+# Copy selected wallpaper from waypaper
+WAYPAPER_INPUT="$1"
+WP_DIR="$HOME/.cache/hypnix"
+
+if [[ ! -d "$WP_DIR" ]]; then
+  mkdir "$WP_DIR"
+fi
+
+cp "$WAYPAPER_INPUT" "$WP_DIR/wallpaper"
+hyprpanel -q
+wallust run "$WAYPAPER_INPUT"
+hyprpanel
