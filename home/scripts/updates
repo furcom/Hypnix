@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+
+displayLogo() {
+  echo -e "\n\e[34m██╗  ██╗██╗   ██╗██████╗ ███╗   ██╗██╗██╗  ██╗\e[0m"
+  echo -e "\e[34m██║  ██║╚██╗ ██╔╝██╔══██╗████╗  ██║██║╚██╗██╔╝\e[0m"
+  echo -e "\e[34m███████║ ╚████╔╝ ██████╔╝██╔██╗ ██║██║ ╚███╔╝\e[0m"
+  echo -e "\e[34m██╔══██║  ╚██╔╝  ██╔═══╝ ██║╚██╗██║██║ ██╔██╗\e[0m"
+  echo -e "\e[34m██║  ██║   ██║   ██║     ██║ ╚████║██║██╔╝ ██╗\e[0m"
+  echo -e "\e[34m╚═╝  ╚═╝   ╚═╝   ╚═╝     ╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝\e[0m"
+  echo -e "\e[34m██╗   ██╗██████╗ ██████╗  █████╗ ████████╗███████╗███████╗\e[0m"
+  echo -e "\e[34m██║   ██║██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔════╝██╔════╝\e[0m"
+  echo -e "\e[34m██║   ██║██████╔╝██║  ██║███████║   ██║   █████╗  ███████╗\e[0m"
+  echo -e "\e[34m██║   ██║██╔═══╝ ██║  ██║██╔══██║   ██║   ██╔══╝  ╚════██║\e[0m"
+  echo -e "\e[34m╚██████╔╝██║     ██████╔╝██║  ██║   ██║   ███████╗███████║\e[0m"
+  echo -e "\e[34m ╚═════╝ ╚═╝     ╚═════╝ ╚═╝  ╚═╝   ╚══════╝╚══════╝\e[0m"
+  echo -e "\e[34m      script by furcom (https://github.com/furcom)\n\e[0m"
+}
+
+FLAKE_DIR="$HOME/.config/hypnix"
+BUILD_DIR="$FLAKE_DIR/result"
+LAST_CHECK_FILE="$HOME/.cache/hypnix/updates-last-check"
+HOST_NAME="hypnix"
+
+# Config: check interval in minutes
+CHECK_INTERVAL_MINUTES=180
+CHECK_INTERVAL_SECONDS=$((CHECK_INTERVAL_MINUTES * 60))
+
+writeLastCheckTimestamp() {
+  mkdir -p "$(dirname "$LAST_CHECK_FILE")"
+  date +%s > "$LAST_CHECK_FILE"
+}
+
+checkIfRecentlyChecked() {
+  if [[ -f "$LAST_CHECK_FILE" && -s "$LAST_CHECK_FILE" ]]; then
+    last_check_epoch=$(<"$LAST_CHECK_FILE")
+    if [[ "$last_check_epoch" =~ ^[0-9]+$ ]]; then
+      now_epoch=$(date +%s)
+      diff_seconds=$((now_epoch - last_check_epoch))
+      if (( diff_seconds < CHECK_INTERVAL_SECONDS )); then
+        echo "Last check was less than $CHECK_INTERVAL_MINUTES minutes ago."
+        echo ""
+        exit 0
+      fi
+    fi
+  fi
+  writeLastCheckTimestamp
+}
+
+checkUpdates() {
+  checkIfRecentlyChecked
+
+  if [ ! -f "$FLAKE_DIR/flake.nix" ]; then
+    echo "Error: No Flake configuration found in $FLAKE_DIR"
+    echo ""
+    exit 1
+  fi
+
+  cd "$FLAKE_DIR" || exit 1
+
+  nixos-rebuild build --flake "$FLAKE_DIR/#$HOST_NAME" &> /dev/null
+
+  if [ ! -e "$BUILD_DIR" ]; then
+    echo "Error: Build failed."
+    echo ""
+    exit 1
+  fi
+
+  UPDATE_COUNT=$(nvd diff /run/current-system "$BUILD_DIR" | awk '/->/ {count++} END {print count}')
+  UPDATE_COUNT=${UPDATE_COUNT:-0}
+
+  rm -rf "$BUILD_DIR"
+
+  writeLastCheckTimestamp
+
+  echo "$UPDATE_COUNT"
+}
+
+case "$1" in
+  -c)
+    checkUpdates
+  ;;
+  -cx)
+    clear
+    displayLogo
+    echo -e "\nChecking for updates...\n"
+    echo -e "$(checkUpdates) available update(s)\n"
+    read -p "Press any key to exit..."
+  ;;
+  -u)
+    clear
+    displayLogo
+    update_packages
+  ;;
+  *)
+    echo -e ""
+  ;;
+esac
