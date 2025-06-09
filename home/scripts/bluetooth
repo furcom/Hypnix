@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# Check Soft block status
+status=$(rfkill list bluetooth | grep -m1 -i "Soft blocked:" | awk '{print $3}' | tr -d '\r' | xargs)
+
+if [ "$status" = "no" ]; then
+    bluetoothctl power off 2>/dev/null
+    rfkill block bluetooth
+elif [ "$status" = "yes" ]; then
+    rfkill unblock bluetooth
+    sleep 3
+    bluetoothctl power on 2>/dev/null
+else
+    exit 1
+fi

@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+DND_STATUS=$(cat ~/.cache/hypnix/dnd_status 2>/dev/null)
+
+play_if_dnd_off() {
+  local file="$1"
+  if [[ "$DND_STATUS" == "dndoff" ]]; then
+    echo "Playing sound: $file"
+    pw-play "$file" &
+  else
+    echo "DND is ON, skipping sound"
+  fi
+}
+
+swoosh_sound() {
+  play_if_dnd_off "$HOME/.config/hypnix/home/files/sounds/swoosh.mp3"
+}
+
+critical_sound() {
+  play_if_dnd_off "$HOME/.config/hypnix/home/files/sounds/critical.mp3"
+}
+
+warning_sound() {
+  play_if_dnd_off "$HOME/.config/hypnix/home/files/sounds/warning.mp3"
+}
+
+click_high_sound() {
+  play_if_dnd_off "$HOME/.config/hypnix/home/files/sounds/click_high.mp3"
+}
+
+click_low_sound() {
+  play_if_dnd_off "$HOME/.config/hypnix/home/files/sounds/click_low.mp3"
+}
+
+notification_sound() {
+  play_if_dnd_off "$HOME/.config/hypnix/home/files/sounds/notification.mp3"
+}
+
+case "$1" in
+  --swoosh) swoosh_sound ;;
+  --critical) critical_sound ;;
+  --warning) warning_sound ;;
+  --click-high) click_high_sound ;;
+  --click-low) click_low_sound ;;
+  --notification) notification_sound ;;
+  *) exit 0 ;;
+esac
